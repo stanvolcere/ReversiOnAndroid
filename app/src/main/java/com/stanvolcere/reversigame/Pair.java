@@ -7,16 +7,27 @@ import android.view.View;
  */
 
 public class Pair {
-    int imageID = 0;
-    //int Y = 0;
-    View image;
+    int x;
+    int y;
 
-    public Pair(int x, View v) {
-        imageID = x;
-        image = v;
+    public Pair(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
+    public int getX() {
+        return x;
+    }
 
+    public void setX(int x) {
+        this.x = x;
+    }
 
+    public int getY() {
+        return y;
+    }
 
+    public void setY(int y) {
+        this.y = y;
+    }
 }

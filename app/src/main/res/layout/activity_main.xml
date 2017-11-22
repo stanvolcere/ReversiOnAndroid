@@ -10,8 +10,11 @@
     <GridView
         android:id="@+id/gridview"
         android:layout_width="match_parent"
-        android:layout_height="380dp"
-        android:layout_marginTop="15dp"
+        android:layout_height="350dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="12dp"
         android:columnWidth="90dp"
         android:gravity="center"
         android:horizontalSpacing="10dp"
@@ -21,16 +24,24 @@
 
     </GridView>
 
+    <TextView
+        android:id="@+id/turnTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/horoLinearLayout"
+        android:layout_below="@id/gridview"
+        android:background="@android:color/background_light"
+        android:text="Whose turn?"
+        android:textAlignment="center"
+        android:textStyle="bold"/>
+
     <LinearLayout
         android:id="@+id/horoLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="75dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/gridview"
-        android:layout_margin="8dp"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_above="@+id/linearLayout"
+        android:layout_centerHorizontal="true">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -91,14 +102,14 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
 
-        android:layout_below="@+id/horoLinearLayout"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="8dp"
-        android:layout_marginTop="13dp"
         android:background="@android:color/background_light"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/horoLinearLayout"
+        android:layout_alignStart="@+id/horoLinearLayout"
+        android:id="@+id/linearLayout">
 
         <Button
             android:id="@+id/passButton"
