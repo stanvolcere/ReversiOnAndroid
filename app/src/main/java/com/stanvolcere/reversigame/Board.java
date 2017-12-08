@@ -2,9 +2,7 @@ package com.stanvolcere.reversigame;
 
 
 
-import java.util.HashMap;
-
-import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * Created by Stan Wayne Volcere on 11/14/2017.
@@ -30,9 +28,29 @@ public class Board {
     private int white = -1;
     private boolean gameOver;
 
+
+
+    int[][] boardValues = new int[][]{
+            {  120, -20,  20,   5,   5,  20, -20, 120},
+            {  -20, -40,  -5,  -5,  -5,  -5, -40, -20},
+            {   20,  -5,  15,   3,   3,  15,  -5,  20},
+            {    5,  -5,   3,   3,   3,   3,  -5,   5},
+            {    5,  -5,   3,   3,   3,   3,  -5,   5},
+            {   20,  -5,  15,   3,   3,  15,  -5,  20},
+            {  -20, -40,  -5,  -5,  -5,  -5, -40, -20},
+            {  120, -20,  20,   5,   5,  20, -20, 120}
+    };
+
     public Board() {
         board = new int[8][8];
         //sets the middle tiles accordingly
+
+        for (int i = 0; i < this.getBoardWidth(); i++){
+            for (int j = 0; j < this.getBoardWidth(); j++){
+                board[i][j] = empty;
+            }
+        }
+
 
         //black tiles
         board[3][3] = black;
@@ -41,10 +59,6 @@ public class Board {
         //white tiles
         board[3][4] = white;
         board[4][3] = white;
-
-
-
-
 
 
 
@@ -61,12 +75,13 @@ public class Board {
         board[pair.getY()][pair.getX()] = chipColour;
     }
 
-    private Pair convertToCoordinate(int position) {
-        return  new Pair((position%8), (position/8));
+    public Pair convertToCoordinate(int position) {
+        return new Pair((position%8), (position/8));
     }
 
     public boolean isBoardFull() {
-        if(board.length >= maxSize){
+
+        if(this.getAvailableCoordinates().isEmpty()){
             return true;
         }
         return false;
@@ -81,8 +96,13 @@ public class Board {
     }
 
     public int getTileAt(int x,int y) {
-//        return tileRetriever[pair.getX()][pair.getY()];
+
         return board[y][x];
+    }
+
+    public int getValueAt(int x,int y) {
+
+        return boardValues[y][x];
     }
 
     public boolean checkIsLegalOnBoard(int x, int y) {
@@ -104,10 +124,18 @@ public class Board {
         return 8;
     }
 
+
+
     public int getTileAtGivenPosition(int i) {
         Pair coordinates = convertToCoordinate(i);
         return getTileAt(coordinates.getX(), coordinates.getY());
     }
+
+    public int getValueAtGivenPosition(int i) {
+        Pair coordinates = convertToCoordinate(i);
+        return getValueAt(coordinates.getX(), coordinates.getY());
+    }
+
 
     public Pair getNewScores() {
         Pair scorePair = new Pair(0,0);
@@ -138,4 +166,73 @@ public class Board {
         return scorePair;
     }
 
+    public ArrayList<Pair> getAvailableCoordinates(){
+
+        ArrayList<Pair> availableSpots = new ArrayList<>();
+        for (int i = 0; i < this.getBoardWidth(); i++){
+            for (int j = 0; j < this.getBoardWidth(); j++){
+                if(board[i][j] == empty){
+                    availableSpots.add(new Pair(i,j));
+                }
+            }
+        }
+        return availableSpots;
+    }
+
+    public ArrayList<Pair> getAvailablePositionsAndValue(){
+
+        ArrayList<Pair> availablePositionsAndValue = new ArrayList<>();
+        //Pair pair = new Pair(0,0);
+        for (int i = 0; i < this.getBoardSize(); i++){
+
+            if(getTileAtGivenPosition(i) == empty){
+//                pair.setX(i);
+//                pair.setY(getBoardValueAtPosition(i));
+                availablePositionsAndValue.add(new Pair(i, getBoardValueAtPosition(i)));
+            }
+        }
+        return availablePositionsAndValue;
+    }
+
+    public int[][] getBoardValues() {
+        return boardValues;
+    }
+
+    public int getBoardValueAtPosition(int position) {
+
+        Pair boardValueCoordinates = convertToCoordinate(position);
+        int boardValue = boardValues[boardValueCoordinates.getX()][boardValueCoordinates.getY()];
+
+        return boardValue;
+    }
+
+    public Pair evaluate() {
+
+        int min = 0;
+        int max = 0;
+        Pair scoreAndMove = new Pair(0,0);
+        //int score = 0;
+//        if (this.isBoardFull()){
+
+            for (int i = 0; i < this.getBoardWidth(); i++){
+                for (int j = 0; j < this.getBoardWidth(); j++){
+                    if(board[i][j] == white){
+                        min = min + boardValues[i][j];
+                    } else {
+                        max = max + boardValues[i][j];
+                    }
+                }
+            }
+            scoreAndMove.setY((max - min));
+            scoreAndMove.setX(0);
+            return scoreAndMove;
+//        }
+//        return scoreAndMove;
+
+    }
+
+//    public ArrayList<Pair> getAvailableAndLegalCoordinates() {
+//
+//
+//    }
 }
