@@ -1,6 +1,8 @@
-package com.stanvolcere.reversigame;
+package com.stanvolcere.reversigame.GameLogic;
 
 
+
+import com.stanvolcere.reversigame.Pair;
 
 import java.util.ArrayList;
 
@@ -211,28 +213,56 @@ public class Board {
         int min = 0;
         int max = 0;
         Pair scoreAndMove = new Pair(0,0);
-        //int score = 0;
-//        if (this.isBoardFull()){
 
-            for (int i = 0; i < this.getBoardWidth(); i++){
-                for (int j = 0; j < this.getBoardWidth(); j++){
-                    if(board[i][j] == white){
-                        min = min + boardValues[i][j];
-                    } else {
-                        max = max + boardValues[i][j];
-                    }
+        for (int i = 0; i < this.getBoardWidth(); i++){
+            for (int j = 0; j < this.getBoardWidth(); j++){
+                if(board[i][j] == black){
+                    min = min + boardValues[i][j];
+                } else if (board[i][j] == white){
+                    max = max + boardValues[i][j];
                 }
             }
-            scoreAndMove.setY((max - min));
-            scoreAndMove.setX(0);
-            return scoreAndMove;
-//        }
-//        return scoreAndMove;
+        }
+        scoreAndMove.setY((max - min));
+        scoreAndMove.setX(0);
+        return scoreAndMove;
+
 
     }
 
-//    public ArrayList<Pair> getAvailableAndLegalCoordinates() {
-//
-//
+    public Pair terminalEvaluation(){
+
+
+        int min = 0;
+        int max = 0;
+        Pair scoreAndMove = new Pair(0,0);
+
+        for (int i = 0; i < this.getBoardWidth(); i++){
+            for (int j = 0; j < this.getBoardWidth(); j++){
+                if(board[i][j] == black){
+                    min = min + boardValues[i][j];
+                } else if (board[i][j] == white){
+                    max = max + boardValues[i][j];
+                }
+            }
+        }
+
+        if (max > min){
+            scoreAndMove.setY((10));
+            scoreAndMove.setX(0);
+            return scoreAndMove;
+        } else if (max > min){
+            scoreAndMove.setY((-10));
+            scoreAndMove.setX(0);
+            return scoreAndMove;
+        } else {
+            scoreAndMove.setY((0));
+            scoreAndMove.setX(0);
+            return scoreAndMove;
+        }
+
+    }
+
+//    public boolean noMoreChildren() {
 //    }
 }

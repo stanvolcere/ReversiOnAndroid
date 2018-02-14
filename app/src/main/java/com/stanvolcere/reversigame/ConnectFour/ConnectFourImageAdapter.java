@@ -1,4 +1,4 @@
-package com.stanvolcere.reversigame;
+package com.stanvolcere.reversigame.ConnectFour;
 
 import android.content.Context;
 import android.view.View;
@@ -6,17 +6,16 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
+
+import com.stanvolcere.reversigame.R;
 
 /**
- * Created by Stan Wayne Volcere on 11/14/2017.
+ * Created by stanvolcere on 07/02/2018.
  */
-
-public class ImageAdapter extends BaseAdapter {
+    public class ConnectFourImageAdapter extends BaseAdapter {
 
     private Context mContext;
-
-    public ImageAdapter(Context c) {
+    public ConnectFourImageAdapter(Context c) {
         mContext = c;
     }
 
@@ -43,20 +42,21 @@ public class ImageAdapter extends BaseAdapter {
             imageView.setScaleType(ImageView.ScaleType.FIT_XY);
             imageView.setPadding(0, 3, 0, 0);
 
-            if (position == 27 || position == 36){
-                imageView.setImageResource(mThumbIds[1]);
-            }
-            else if (position == 28 || position == 35){
-                imageView.setImageResource(mThumbIds[2]);
-            }
-            else {
-                imageView.setImageResource(mThumbIds[0]);
-            }
+//            if (position == 27 || position == 36){
+//                imageView.setImageResource(mThumbIds[1]);
+//            }
+//            else if (position == 28 || position == 35){
+//                imageView.setImageResource(mThumbIds[2]);
+//            }
+//            else {
+//                imageView.setImageResource(mThumbIds[0]);
+//            }
+            imageView.setImageResource(mThumbIds[0]);
 
         } else {
             imageView = (ImageView) convertView;
         }
-        
+
         return imageView;
     }
 
@@ -68,5 +68,7 @@ public class ImageAdapter extends BaseAdapter {
             R.drawable.whitechip
     };
 
-//    public void get
+
+
 }
+

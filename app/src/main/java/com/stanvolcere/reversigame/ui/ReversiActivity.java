@@ -1,8 +1,6 @@
-package com.stanvolcere.reversigame;
+package com.stanvolcere.reversigame.ui;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -15,10 +13,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.stanvolcere.reversigame.GameLogic.Board;
+import com.stanvolcere.reversigame.ImageAdapter;
+import com.stanvolcere.reversigame.Pair;
+import com.stanvolcere.reversigame.R;
+
 import java.util.ArrayList;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class ReversiActivity extends AppCompatActivity {
 
     private Board mBoard;
     private Pair score = new Pair(2,2);
@@ -36,14 +39,15 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler;
     private ArrayList<Pair> listOfMovesMade = new ArrayList<>(
 
-    );;
+    );
     private int callsToMinimax = 0;
+    private int callsToAlphaBeta = 0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_reversi);
 
         mHandler = new Handler();
 
@@ -95,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                                 makeMove(blackTurn,tile, mBoard,position,gridview);
                             } while (!opponentHasMove(mBoard, white));
 
-                            Toast.makeText(MainActivity.this, "Game is Thinking!",  Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ReversiActivity.this, "Game is Thinking!",  Toast.LENGTH_SHORT).show();
                             blackTurn = true;
 
                         } else {
@@ -112,6 +116,15 @@ public class MainActivity extends AppCompatActivity {
 //                            }, 1500);
 
                         }
+
+                        for (Pair moves: listOfMovesMade){
+                            //re-adds the moves from the original state of the board
+                            mBoard.addToBoard(moves.getX(), moves.getY());
+                        }
+
+                        whiteScore.setText(score.getY() + "");
+                        blackScore.setText(score.getX() + "");
+
                         do {
                             mHandler.postDelayed(new Runnable() {
                                 public void run() {
@@ -121,16 +134,14 @@ public class MainActivity extends AppCompatActivity {
                                     computerMove(false,helperBoard,gridview);
                                     //randomMove(false,helperBoard,gridview);
                                 }
-                            }, 1500);
+                            }, 500);
                         } while (!opponentHasMove(mBoard, black));
 
-                    }else{Toast.makeText(MainActivity.this, "Move at - " + position + "is Unavailable. Try Again",  Toast.LENGTH_SHORT).show();}
+                    }else{Toast.makeText(ReversiActivity.this, "Move at - " + position + "is Unavailable. Try Again",  Toast.LENGTH_SHORT).show();}
                 } else {
-                    Toast.makeText(MainActivity.this, "Move at - " + position + "is Unavailable. Try Again",  Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReversiActivity.this, "Move at - " + position + "is Unavailable. Try Again",  Toast.LENGTH_SHORT).show();
                 }
 
-
-                //computerMove(false,mBoard,gridview);
 
 
 
@@ -142,6 +153,31 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     turn.setText("Black Chip it's your turn!");
                 }
+
+                if (mBoard.isBoardFull()){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ReversiActivity.this);
+
+                    builder.setCancelable(true);
+                    builder.setTitle("The game is Over!");
+                    if (score.getX() > score.getY()){
+                        builder.setMessage("Black Chip Player you win!");
+                    } else if (score.getX() < score.getY()) {
+                        builder.setMessage("White Chip Player you win!");
+                    } else {
+                        builder.setMessage("The game ended in a draw. Play Again?");
+                    }
+
+                    builder.setPositiveButton("Play Again", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ReversiActivity.super.recreate();
+                        }
+                    });
+
+
+
+                }
+
             }
         });
 
@@ -149,23 +185,28 @@ public class MainActivity extends AppCompatActivity {
         quitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "You are about to quit the game!",  Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReversiActivity.this, "You are about to quit the game!",  Toast.LENGTH_SHORT).show();
             }
         });
 
-//        passButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (filterIllegalMoves(mBoard, black))
-//            }
-//        });
+        passButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!opponentHasMove(mBoard, black)){
+                    computerMove(false,mBoard, gridview);
+                } else {
+                    Toast.makeText(ReversiActivity.this, "You have moves available!",  Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
     }
 
     private boolean opponentHasMove(Board mBoard, int player) {
         if(filterIllegalMoves(mBoard, player).isEmpty()){
 
-            createAlert();
+            //createAlert();
+            Toast.makeText(ReversiActivity.this, "You have m=no available moves! Tit you opponents turn!",  Toast.LENGTH_SHORT).show();
             return false;
 
         } else {
@@ -175,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void createAlert() {
 
-        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        AlertDialog alertDialog = new AlertDialog.Builder(ReversiActivity.this).create();
         alertDialog.setTitle("Alert");
         alertDialog.setMessage("Sorry, you have no available move. You'll have to pass!");
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -187,6 +228,9 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
 
     }
+
+
+
 
     //checking the move is legal =============================================================================
     private boolean checkLegalMove(Board board, int position, int chiptype) {
@@ -285,14 +329,14 @@ public class MainActivity extends AppCompatActivity {
 
                     if(i <= board.getBoardWidth()){
                         if (board.checkIsLegalOnBoard(i, initialYPos)) {
-                            //                if (!mBoard.checkBoardEdge(initialXPos,i)) {
+                            //if (!mBoard.checkBoardEdge(initialXPos,i)) {
                             if (board.getTileAt(i, initialYPos) == empty) {
                                 if (listOfPositionsToChange.isEmpty()) {
                                     break;
                                 } else {
                                     listOfPositionsToChange.clear();
                                     break;
-                                }
+                                }                                                    //new code to check that the next tile is actually legal (solves edge cases issue)
                             } else if (board.getTileAt(i, initialYPos) == chipType) {
                                 if (listOfPositionsToChange.isEmpty()) {
                                     break;
@@ -306,6 +350,15 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                             }
+
+                            if (!board.checkIsLegalOnBoard((i+1), (initialYPos))){
+                                if (listOfPositionsToChange.isEmpty()) {
+                                    break;
+                                } else {
+                                    listOfPositionsToChange.clear();
+                                    break;
+                                }
+                            }
                         }
                     } else {
                         listOfPositionsToChange.clear();
@@ -315,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
 
-            //initialXPos = (position - 1)/mBoard.getBoardWidth();
+
 
             helper = position;
             if (position < board.getBoardSize()) {
@@ -342,6 +395,16 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                             }
+
+                            if (!board.checkIsLegalOnBoard((j-1), (initialYPos))){
+                                if (listOfPositionsToChange.isEmpty()) {
+                                    break;
+                                } else {
+                                    listOfPositionsToChange.clear();
+                                    break;
+                                }
+                            }
+
                         }
                     } else {
                         listOfPositionsToChange.clear();
@@ -389,6 +452,15 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
+
+                    if (!board.checkIsLegalOnBoard((initialXPos), (i+1))){
+                        if (listOfPositionsToChange.isEmpty()) {
+                            break;
+                        } else {
+                            listOfPositionsToChange.clear();
+                            break;
+                        }
+                    }
                 }
 
             }
@@ -419,6 +491,16 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                         }
+
+                        if (!board.checkIsLegalOnBoard((initialXPos), (j-1))){
+                            if (listOfPositionsToChange.isEmpty()) {
+                                break;
+                            } else {
+                                listOfPositionsToChange.clear();
+                                break;
+                            }
+                        }
+
                     }
                 }
             }
@@ -451,7 +533,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Integer> listOfCoordinatesToChange = new ArrayList<Integer>();
         int helper = position;
 
-        if (initialX > 0 && initialY > 0){
+        if (initialX >= 0 && initialY >= 0){
             do {
                 if(board.getTileAt(initialX, initialY) == empty){
                     if(listOfCoordinatesToChange.isEmpty()){
@@ -460,7 +542,7 @@ public class MainActivity extends AppCompatActivity {
                         listOfCoordinatesToChange.clear();
                         break;
                     }
-                    //(mBoard.getTileAt(initialX, initialY) == empty)
+
                 } else if (board.getTileAt(initialX, initialY) == chipType){
                     if(listOfCoordinatesToChange.isEmpty()){
                         break;
@@ -476,7 +558,16 @@ public class MainActivity extends AppCompatActivity {
                 initialY--;
                 initialX--;
 
-            } while (initialX > 0 && initialY > 0);
+                if(!board.checkIsLegalOnBoard((initialX), (initialY))){
+                    if(listOfCoordinatesToChange.isEmpty()){
+                        break;
+                    } else {
+                        listOfCoordinatesToChange.clear();
+                        break;
+                    }
+                }
+
+            } while (initialX >= 0 && initialY >= 0);
         } //else {
         return listOfCoordinatesToChange;
     }
@@ -489,7 +580,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Integer> listOfCoordinatesToChange = new ArrayList<Integer>();
         int helper = position;
 
-        if (initialX > 0 && initialY < board.getBoardWidth()){
+        if (initialX >= 0 && initialY < board.getBoardWidth()){
             do {
                 if(board.getTileAt(initialX, initialY) == empty){
                     if(listOfCoordinatesToChange.isEmpty()){
@@ -514,7 +605,16 @@ public class MainActivity extends AppCompatActivity {
                 initialY++;
                 initialX--;
 
-            } while (initialX > 0 && initialY < board.getBoardWidth());
+                if(!board.checkIsLegalOnBoard((initialX), (initialY))){
+                    if(listOfCoordinatesToChange.isEmpty()){
+                        break;
+                    } else {
+                        listOfCoordinatesToChange.clear();
+                        break;
+                    }
+                }
+
+            } while (initialX >= 0 && initialY < board.getBoardWidth());
         } //else {
         return listOfCoordinatesToChange;
 
@@ -553,8 +653,17 @@ public class MainActivity extends AppCompatActivity {
                 initialY++;
                 initialX++;
 
+                if(!board.checkIsLegalOnBoard((initialX), (initialY))){
+                    if(listOfCoordinatesToChange.isEmpty()){
+                        break;
+                    } else {
+                        listOfCoordinatesToChange.clear();
+                        break;
+                    }
+                }
+
             } while (initialX < board.getBoardWidth() && initialY < board.getBoardWidth());
-        } //else {
+        }
         return listOfCoordinatesToChange;
     }
 
@@ -566,7 +675,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Integer> listOfCoordinatesToChange = new ArrayList<Integer>();
         int helper = position;
 
-        if (initialX < board.getBoardWidth() && initialY > 0){
+        if (initialX < board.getBoardWidth() && initialY >= 0){
             do {
                 if(board.getTileAt(initialX, initialY) == empty){
                     if(listOfCoordinatesToChange.isEmpty()){
@@ -575,7 +684,7 @@ public class MainActivity extends AppCompatActivity {
                         listOfCoordinatesToChange.clear();
                         break;
                     }
-                    //(mBoard.getTileAt(initialX, initialY) == empty)
+
                 } else if (board.getTileAt(initialX, initialY) == chipType){
                     if(listOfCoordinatesToChange.isEmpty()){
                         break;
@@ -588,10 +697,20 @@ public class MainActivity extends AppCompatActivity {
                         listOfCoordinatesToChange.add(helper);
                     }
                 }
+
                 initialY--;
                 initialX++;
 
-            } while (initialX < board.getBoardWidth() && initialY > 0);
+                if(!board.checkIsLegalOnBoard((initialX), (initialY))){
+                    if(listOfCoordinatesToChange.isEmpty()){
+                        break;
+                    } else {
+                        listOfCoordinatesToChange.clear();
+                        break;
+                    }
+                }
+
+            } while (initialX < board.getBoardWidth() && initialY >= 0);
         } //else {
         return listOfCoordinatesToChange;
     }
@@ -599,8 +718,6 @@ public class MainActivity extends AppCompatActivity {
     private static Pair convertPositionToCoordinate(int position) {
         return  new Pair((position%8), (position/8));
     }
-
-
 
 
 
@@ -659,14 +776,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void computerMove(boolean blackTurn, Board passThisBoardToMinimax, GridView gridview){
 
-         callsToMinimax++;
+         //callsToMinimax++;
          Board updatedBoard = new Board();
 
          //Using Minimax Algorithm
-         //Pair chosenMoveAndValue = minimax(passThisBoardToMinimax, !blackTurn);
+          //Pair chosenMoveAndValue = minimax(passThisBoardToMinimax, !blackTurn, 3);
 
-         //Using Alph-Beta Pruning                                                  alpha            beta
-         Pair chosenMoveAndValue = alphaBeta(passThisBoardToMinimax, !blackTurn, -100000, 100000);
+         //Using Alpha-Beta Pruning                                                  alpha            beta
+         Pair chosenMoveAndValue = alphaBeta(passThisBoardToMinimax, !blackTurn, -100000, 100000, 3);
 
          for (Pair moves: listOfMovesMade){
              //re-adds the moves from the original state of the board
@@ -676,9 +793,11 @@ public class MainActivity extends AppCompatActivity {
          mBoard = updatedBoard;
 
          int chosenMove = chosenMoveAndValue.getX();
-         ImageView newTile = (ImageView) gridview.getChildAt(chosenMove);
+
 
         if (!blackTurn){
+            ImageView newTile = (ImageView) gridview.getChildAt(chosenMove);
+
             newTile.setImageResource(R.drawable.whitechip);
              mBoard.addToBoard(chosenMove,white);
             listOfMovesMade.add(new Pair(chosenMove,white));
@@ -703,9 +822,10 @@ public class MainActivity extends AppCompatActivity {
              }
              score = mBoard.getNewScores();
          }
+         callsToAlphaBeta = 0;
      }
 
-    private Pair minimax(Board board, boolean maxPlayer ){
+    private Pair minimax(Board board, boolean maxPlayer, int depth ){
 
          //Pair bestCombo = new Pair(0,0);
         callsToMinimax++;
@@ -713,8 +833,13 @@ public class MainActivity extends AppCompatActivity {
         int bestMove;
 
          if (board.isBoardFull()){
-             return board.evaluate();
+             //return board.evaluate();
+             return board.terminalEvaluation();
 
+         }
+
+         if (depth == 0){
+             return board.evaluate();
          }
 
          if (maxPlayer){ // the ai player
@@ -723,19 +848,30 @@ public class MainActivity extends AppCompatActivity {
 
              //ArrayList<Pair> availableSpotsAndValue =mBoard.getAvailablePositionsAndValue();
              ArrayList<Integer> newlist = filterIllegalMoves(board, white);
-             for (int scoredMove: newlist){
 
-                Board newBoard = board;
+             Board newBoard = board;
 
-                 newBoard.addToBoard(scoredMove, white);
-                newBoard = makeChangesToBoard(newBoard,scoredMove, white);
+             if (!newlist.isEmpty()){
+                 for (int scoredMove: newlist){
 
-                Pair value = minimax(newBoard, false);
-                if (value.getY() > bestValue){
-                    bestValue = value.getY();
-                    bestMove = scoredMove;
-                }
+                     newBoard.addToBoard(scoredMove, white);
+                     newBoard = makeChangesToBoard(newBoard,scoredMove, white);
+
+                     Pair value = minimax(newBoard, false, depth-1);
+                     if (value.getY() > bestValue){
+                         bestValue = value.getY();
+                         bestMove = scoredMove;
+                     }
+                 }
+             } else {
+
+                 Pair value = minimax(newBoard, true , depth-1);
+                 if (value.getY() < bestValue){
+                     bestValue = value.getY();
+                     bestMove = value.getX();
+                 }
              }
+
              return new Pair(bestMove,bestValue);
 
          } else { // the human player
@@ -744,18 +880,30 @@ public class MainActivity extends AppCompatActivity {
              bestMove = 0;
 
              ArrayList<Integer> newlist = filterIllegalMoves(board, black);
-             for (int scoredMove: newlist){
 
-                 Board newBoard = board;
-                 newBoard.addToBoard(scoredMove, black);
-                 newBoard = makeChangesToBoard(newBoard,scoredMove, black);
+             Board newBoard = board;
 
-                 Pair value = minimax(newBoard, true);
-                 if (value.getY() < bestValue){
-                     bestValue = value.getY();
-                     bestMove = scoredMove;
+             if (!newlist.isEmpty()){
+                 for (int scoredMove: newlist){
+
+                     newBoard.addToBoard(scoredMove, black);
+                     newBoard = makeChangesToBoard(newBoard,scoredMove, black);
+
+                     Pair value = minimax(newBoard, true , depth-1);
+                     if (value.getY() < bestValue){
+                         bestValue = value.getY();
+                         bestMove = scoredMove;
+                     }
                  }
+             } else {
+
+                     Pair value = minimax(newBoard, false , depth-1);
+                     if (value.getY() < bestValue){
+                         bestValue = value.getY();
+                         bestMove = value.getX();
+                     }
              }
+
              return new Pair(bestMove,bestValue);
 
          }
@@ -792,11 +940,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //Alpha-Beta Pruning section
-    private Pair alphaBeta(Board board, boolean maxPlayer, int alpha, int beta){
 
 
-        //callsToMinimax++;
+    //Alpha-Beta Pruning section ==================================================================
+    private Pair alphaBeta(Board board, boolean maxPlayer, int alpha, int beta, int depth){
+
+
+        callsToAlphaBeta++;
         int bestValue;
         int bestMove;
 
@@ -807,72 +957,113 @@ public class MainActivity extends AppCompatActivity {
                 movesPlayed.add(new Pair(i, white));
             } else if (board.getTileAtGivenPosition(i) == black){
                 movesPlayed.add(new Pair(i, black));
-            } else {
-                continue;
             }
         }
 
-        if (board.isBoardFull()){
+
+        if (depth == 0){
             return board.evaluate();
+        }
+
+
+        if (board.isBoardFull()){
+            return board.terminalEvaluation();
 
         }
+
+//
+//        if(board.noMoreChildren()){
+//        }
+
+
 
         if (maxPlayer){ // the ai player
             bestValue = -100000;
             bestMove = 0;
 
-            //ArrayList<Pair> availableSpotsAndValue =mBoard.getAvailablePositionsAndValue();
-            ArrayList<Integer> newlist = filterIllegalMoves(board, white);
-            for (int scoredMove: newlist){
 
+            ArrayList<Integer> newlist = filterIllegalMoves(board, white);
+            Board newBoard = board;
+
+            if (!newlist.isEmpty()) {
+
+                for (int scoredMove: newlist){
 //                Board newBoard = new Board();
 //
 //                for (Pair pastMove : movesPlayed){
 //                    newBoard.addToBoard(pastMove.getX(), pastMove.getY());
-//                }
-                Board newBoard = board;
+//
 
-                newBoard.addToBoard(scoredMove, white);
-                //movesPlayed.add(new Pair(scoredMove, white));
+                    newBoard.addToBoard(scoredMove, white);
+                    //movesPlayed.add(new Pair(scoredMove, white));
 
-                newBoard = makeChangesToBoard(newBoard,scoredMove, white);
+                    newBoard = makeChangesToBoard(newBoard,scoredMove, white);
 
-                Pair value = alphaBeta(newBoard, false, alpha, beta);
+                    Pair value = alphaBeta(newBoard, false, alpha, beta , depth-1);
 
-                bestValue = returnMax(bestValue, value.getY());
-                alpha = returnMax(bestValue, alpha);
+                    if (value.getY() > bestValue){
+                        bestMove = scoredMove;
+                    }
+                    bestValue = returnMax(bestValue, value.getY());
+                    alpha = returnMax(bestValue, alpha);
 
-                if (beta <= alpha){
-                    break;
+                    if (beta <= alpha){
+                        break;
+                    }
+
                 }
+            } else {
+
+                //forces to pass to min player
+                Pair value = alphaBeta(newBoard, true, alpha, beta , depth-1);
+
+                if (value.getY() < bestValue){
+                    bestMove = value.getX();
+                }
+                bestValue = returnMax(bestValue, value.getY());
+
             }
+
             return new Pair(bestMove,bestValue);
 
-        } else { // the human player
+        } else { // the human player/minimizing player
 
             bestValue = 100000;
             bestMove = 0;
 
             ArrayList<Integer> newlist = filterIllegalMoves(board, black);
-            for (int scoredMove: newlist){
+            Board newBoard = board;
 
-                //Board newBoard = new Board();
-                Board newBoard = board;
-//                for (Pair pastMove : movesPlayed){
-//                    newBoard.addToBoard(pastMove.getX(), pastMove.getY());
-//                }
+            if (!newlist.isEmpty()){
+                for (int scoredMove: newlist){
 
-                newBoard.addToBoard(scoredMove, black);
-                newBoard = makeChangesToBoard(newBoard,scoredMove, black);
+                    newBoard.addToBoard(scoredMove, black);
+                    newBoard = makeChangesToBoard(newBoard,scoredMove, black);
 
-                Pair value = alphaBeta(newBoard, true, alpha, beta);
+                    Pair value = alphaBeta(newBoard, true, alpha, beta, depth-1);
 
-                bestValue = returnMin(value.getY(), bestValue);
-                beta = returnMin(bestValue, beta);
+                    if (value.getY() < bestValue){
+                        bestMove = scoredMove;
+                    }
 
-                if (beta <= alpha){
-                    break;
+                    bestValue = returnMin(value.getY(), bestValue);
+                    beta = returnMin(bestValue, beta);
+                    //bestMove =
+
+                    if (beta <= alpha){
+                        break;
+                    }
                 }
+            } else {
+
+                //forced to pass
+                Pair value = alphaBeta(newBoard, false, alpha, beta, depth-1);
+
+                if (value.getY() < bestValue){
+                    bestMove = value.getX();
+                }
+                bestValue = returnMin(value.getY(), bestValue);
+
             }
             return new Pair(bestMove,bestValue);
 
