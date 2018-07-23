@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.stanvolcere.reversigame.GameLogic.Board;
+import com.stanvolcere.reversigame.model.Board;
 import com.stanvolcere.reversigame.ImageAdapter;
 import com.stanvolcere.reversigame.Pair;
 import com.stanvolcere.reversigame.R;
@@ -134,7 +134,7 @@ public class ReversiActivity extends AppCompatActivity {
                                     computerMove(false,helperBoard,gridview);
                                     //randomMove(false,helperBoard,gridview);
                                 }
-                            }, 500);
+                            }, 10);
                         } while (!opponentHasMove(mBoard, black));
 
                     }else{Toast.makeText(ReversiActivity.this, "Move at - " + position + "is Unavailable. Try Again",  Toast.LENGTH_SHORT).show();}
@@ -154,29 +154,7 @@ public class ReversiActivity extends AppCompatActivity {
                     turn.setText("Black Chip it's your turn!");
                 }
 
-                if (mBoard.isBoardFull()){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(ReversiActivity.this);
 
-                    builder.setCancelable(true);
-                    builder.setTitle("The game is Over!");
-                    if (score.getX() > score.getY()){
-                        builder.setMessage("Black Chip Player you win!");
-                    } else if (score.getX() < score.getY()) {
-                        builder.setMessage("White Chip Player you win!");
-                    } else {
-                        builder.setMessage("The game ended in a draw. Play Again?");
-                    }
-
-                    builder.setPositiveButton("Play Again", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ReversiActivity.super.recreate();
-                        }
-                    });
-
-
-
-                }
 
             }
         });
@@ -185,7 +163,8 @@ public class ReversiActivity extends AppCompatActivity {
         quitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(ReversiActivity.this, "You are about to quit the game!",  Toast.LENGTH_SHORT).show();
+                //Toast.makeText(ReversiActivity.this, "You are about to quit the game!",  Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
 
@@ -200,13 +179,37 @@ public class ReversiActivity extends AppCompatActivity {
             }
         });
 
+        if (mBoard.isBoardFull()){
+            AlertDialog.Builder builder = new AlertDialog.Builder(ReversiActivity.this);
+
+            builder.setCancelable(true);
+            builder.setTitle("The game is Over!");
+            if (score.getX() > score.getY()){
+                builder.setMessage("Black Chip Player you win!");
+            } else if (score.getX() < score.getY()) {
+                builder.setMessage("White Chip Player you win!");
+            } else {
+                builder.setMessage("The game ended in a draw. Play Again?");
+            }
+
+            builder.setPositiveButton("Play Again", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    ReversiActivity.super.recreate();
+                }
+            });
+
+
+
+        }
+
     }
 
     private boolean opponentHasMove(Board mBoard, int player) {
         if(filterIllegalMoves(mBoard, player).isEmpty()){
 
             //createAlert();
-            Toast.makeText(ReversiActivity.this, "You have m=no available moves! Tit you opponents turn!",  Toast.LENGTH_SHORT).show();
+            Toast.makeText(ReversiActivity.this, "You have no available moves! It's your opponents turn!",  Toast.LENGTH_SHORT).show();
             return false;
 
         } else {
@@ -821,8 +824,10 @@ public class ReversiActivity extends AppCompatActivity {
                  }
              }
              score = mBoard.getNewScores();
-         }
+        }
          callsToAlphaBeta = 0;
+        whiteScore.setText(score.getY() + "");
+        blackScore.setText(score.getX() + "");
      }
 
     private Pair minimax(Board board, boolean maxPlayer, int depth ){
@@ -971,11 +976,10 @@ public class ReversiActivity extends AppCompatActivity {
 
         }
 
-//
-//        if(board.noMoreChildren()){
-//        }
 
 
+        int newDepth = depth;
+        newDepth--;
 
         if (maxPlayer){ // the ai player
             bestValue = -100000;
@@ -999,7 +1003,7 @@ public class ReversiActivity extends AppCompatActivity {
 
                     newBoard = makeChangesToBoard(newBoard,scoredMove, white);
 
-                    Pair value = alphaBeta(newBoard, false, alpha, beta , depth-1);
+                    Pair value = alphaBeta(newBoard, false, alpha, beta , newDepth);
 
                     if (value.getY() > bestValue){
                         bestMove = scoredMove;
@@ -1015,12 +1019,13 @@ public class ReversiActivity extends AppCompatActivity {
             } else {
 
                 //forces to pass to min player
-                Pair value = alphaBeta(newBoard, true, alpha, beta , depth-1);
+                Pair value = alphaBeta(newBoard, true, alpha, beta , newDepth);
 
                 if (value.getY() < bestValue){
                     bestMove = value.getX();
                 }
                 bestValue = returnMax(bestValue, value.getY());
+
 
             }
 
@@ -1040,7 +1045,7 @@ public class ReversiActivity extends AppCompatActivity {
                     newBoard.addToBoard(scoredMove, black);
                     newBoard = makeChangesToBoard(newBoard,scoredMove, black);
 
-                    Pair value = alphaBeta(newBoard, true, alpha, beta, depth-1);
+                    Pair value = alphaBeta(newBoard, true, alpha, beta, newDepth);
 
                     if (value.getY() < bestValue){
                         bestMove = scoredMove;
@@ -1057,7 +1062,7 @@ public class ReversiActivity extends AppCompatActivity {
             } else {
 
                 //forced to pass
-                Pair value = alphaBeta(newBoard, false, alpha, beta, depth-1);
+                Pair value = alphaBeta(newBoard, false, alpha, beta, newDepth);
 
                 if (value.getY() < bestValue){
                     bestMove = value.getX();
@@ -1088,4 +1093,8 @@ public class ReversiActivity extends AppCompatActivity {
     }
 
 
+
 }
+
+
+

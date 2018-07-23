@@ -1,4 +1,4 @@
-package com.stanvolcere.reversigame.GameLogic;
+package com.stanvolcere.reversigame.model;
 
 import android.widget.ImageView;
 

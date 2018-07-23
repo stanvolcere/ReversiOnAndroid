@@ -1,4 +1,4 @@
-package com.stanvolcere.reversigame.GameLogic;
+package com.stanvolcere.reversigame.model;
 
 
 
@@ -74,7 +74,7 @@ public class Board {
 
     public void addToBoard(int position, int chipColour) {
         Pair pair = convertToCoordinate(position);
-        board[pair.getY()][pair.getX()] = chipColour;
+        this.board[pair.getY()][pair.getX()] = chipColour;
     }
 
     public Pair convertToCoordinate(int position) {
@@ -216,9 +216,9 @@ public class Board {
 
         for (int i = 0; i < this.getBoardWidth(); i++){
             for (int j = 0; j < this.getBoardWidth(); j++){
-                if(board[i][j] == black){
+                if(this.board[i][j] == black){
                     min = min + boardValues[i][j];
-                } else if (board[i][j] == white){
+                } else if (this.board[i][j] == white){
                     max = max + boardValues[i][j];
                 }
             }
@@ -239,9 +239,9 @@ public class Board {
 
         for (int i = 0; i < this.getBoardWidth(); i++){
             for (int j = 0; j < this.getBoardWidth(); j++){
-                if(board[i][j] == black){
+                if(this.board[i][j] == black){
                     min = min + boardValues[i][j];
-                } else if (board[i][j] == white){
+                } else if (this.board[i][j] == white){
                     max = max + boardValues[i][j];
                 }
             }
@@ -263,6 +263,22 @@ public class Board {
 
     }
 
-//    public boolean noMoreChildren() {
-//    }
+    public void applyPreviousMoves(ArrayList<Pair> movesPlayed) {
+
+        for (int i = 0; i < this.getBoardWidth(); i++){
+            for (int j = 0; j < this.getBoardWidth(); j++){
+                this.board[i][j] = empty;
+            }
+        }
+
+        for(Pair move: movesPlayed) {
+            if (move.getY() == white) {
+                this.addToBoard(move.getX(), move.getY());
+            } else {
+                this.addToBoard(move.getX(), move.getY());
+            }
+        }
+    }
+
+
 }
